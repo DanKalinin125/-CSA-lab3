@@ -4,7 +4,7 @@
 
 > Калинин Даниил Дмитриевич, P33141
 
-## Вариант
+## Вариант (с упрощением)
 
 > Исходный вариант: alg | risc | neum | hw | instr | binary | stream | mem | cstr | prob2 | pipeline\
 > **Вариант после упрощения**:  asm | risc | neum | hw | instr | struct | stream | mem | cstr | prob2
@@ -31,3 +31,99 @@
   - отображение портов ввода-вывода в память должно конфигурироваться (можно hardcode-ом).
 - **cstr** - Null-terminated (C string)
 - **prob2** - Even Fibonacci numbers (сумма четных чисел Фибонначи, не превышающих 4 млн).
+
+## Язык программирования
+
+Язык программирования должен поддерживать:
+
+- ветвления
+- циклы
+- математику
+- строки (Null-terminated (C string))
+- ввод/вывод
+- label-ы
+
+### Форма Бэкуса — Наура
+
+```ebnf
+// Команды и прочие элементы языка программирования
+
+<program> ::= <program_line> | <program_line> "\n" <program>
+
+<program_line> ::= <code_line> | <comment> | <code_line> <comment>
+
+<code_line> ::= <address_definition> | <data_definition> | <label_definition> | <command>
+
+<address_definition> ::= "org" <non_neg_number>
+
+<data_definition> ::= <label_definition> "\n" <data>
+
+<data> ::= ".word" <number> | ".word" <string> | ".word" <label_name>
+
+<command> ::= <onear_instruction> <address> | <branch_instruction> <address> | <nullar_instruction>
+
+<address> = <label_name> | "(" <label_name> ")"
+
+<label_definition> ::= <label_name> ":"
+
+<label_name> ::= <word> 
+
+<branch_instruction> ::= "jg" | "jz" | "jnz" | "jmp"
+
+<one_parameter_instruction> ::= "load" | "store" | "add"
+
+<zero_parameters_instruction> ::= "inc" | "dec" | "hlt" 
+
+<comment> ::= ";" <text>
+
+// Строки
+
+<string> ::= '"' <text> '"'
+
+<text> ::= <word> | <word> <word>
+
+<word> ::= <character> | <character> <word>
+
+<character> ::= <symbol> | <letter> | <digit>
+
+// Числа
+
+<number> ::= [-] <non-negative number>
+
+<non-negative number> ::= <digit> | <digit> <non-negative number>
+
+// Основные термы
+
+<symbol> ::=  "|" | " " | "-" | "!" | ...
+
+<letter> ::= "a" | "b" | "c" | ... | "z" | "A" | "B" | "C" | ... | "Z"
+
+<digit> ::= "0" | "1" | "2" |  ... | "9"
+```
+
+Строке программы может соответствовать:
+
+- Пустая строка 
+- Комментарий `<comment>`
+- Определение адреса `<address_definition> = org + Не отрицательное число (Адрес)`
+- Определение метки `<label_definition>`
+- Определение данных `<data_definition> = <label_definition> + .word + Данные (число или строка)`
+  - Здесь, конечно, 2 строки, но определение данных без обозначения метки не имеет смысла
+- Команда `<command> = Инструкция + Адрес (если его наличие предусматривает инструкция)`
+
+### Семантика
+
+- Глобальная видимость данных
+- Поддерживаются целочисленные литералы (без ограничений на размер)
+- Поддерживаются строковые литералы в виде C-string
+  - Пример объявления строковых данных: .word 'Hello'
+- Код выполняется последовательно
+- Точка входа в программу -- метка _start (метка не может повторяться или отсутствовать)
+- Название метки не должно:
+  - совпадать с названием команды
+  - начинаться с цифры
+  - совпадать с ключевыми словами org или .word
+- Метки располагаются на строке, предшествующей строке с командой, операнды находятся на одной строке с командами
+- Пробельные символы в конце и в начале строки игнорируются
+- Любой текст, расположенный в конце строки после символа ; трактуется как комментарий
+- Память выделяется статически, при запуске модели.
