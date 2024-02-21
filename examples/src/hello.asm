@@ -15,7 +15,7 @@ out_address:
 _start:
   loop:
     load (pointer)
-    out out_address
+    store out_address
     load pointer
     inc
     store pointer
