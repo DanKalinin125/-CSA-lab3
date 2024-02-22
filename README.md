@@ -150,6 +150,9 @@ Registers
 Instruction & Data memory
 +-----------------------------------------------+
 |    0    :  jmp _start                         |
+|    1    :  input_buffer                       |
+|    2    :  ouput_str_buffer                   |
+|    3    :  ouput_int_buffer                   |
 |        ...                                    |
 | _start  :  program start                      |
 |        ...                                    |
