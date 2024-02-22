@@ -1,23 +1,23 @@
 org 10
 
 message:
-  .word 'Hello world!\0'
+  .word 'Hello world!'
 
 pointer:
   .word message
 
-end_line:
+end_str:
   .word '\0'
 
-out_address:
-  .word 15
+out_addr:
+  .word 2
 
 _start:
-  loop:
-    load (pointer)
-    store out_address
-    load pointer
-    inc
-    store pointer
-    sub end_line
-    jnz loop
+  mov r0, (pointer)
+  mov (out_addr), r0
+  mov r0, pointer
+  inc r0
+  mov pointer, r0
+  sub r0, end_str
+  jnz _start
+  hlt
