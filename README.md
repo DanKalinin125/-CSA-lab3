@@ -68,11 +68,11 @@
 
 <branch_instruction> ::= "jg" | "jz" | "jnz" | "jmp"
 
-<two_parameter_instruction> ::= "add" | "sub" | "mov" 
+<two_parameter_instruction> ::= "add" | "sub" | "mov"
 
-<one_parameter_instruction> ::= "inc" | "dec" | "push" | "pop"
+<one_parameter_instruction> ::= "inc" | "dec"
 
-<zero_parameters_instruction> ::= "nop" | "hlt" | "iret" | "di" | "ei"  
+<zero_parameters_instruction> ::= "nop" | "hlt" 
 
 <comment> ::= ";" <text>
 
@@ -238,6 +238,6 @@ Instruction & Data memory
 - `addr_2` - адресс_2
 - `is_indirect_2` - косвенная ли адресация для addr_2
 
-Типы данных в модуле isa, где:
+Типы данных в модуле [isa](./isa.py), где:
 
 - `Opcode` - перечисление кодов операций
