@@ -1,13 +1,12 @@
-org 10
-
 message:
-  .word 'Hello world!'
+  .word 'Hello world!' ; Наше сообщение
 
+; Указатель на следующий символ для печати
 pointer:
   .word message
 
 end_str:
-  .word '\0'
+  .word 0
 
 out_addr:
   .word 2
