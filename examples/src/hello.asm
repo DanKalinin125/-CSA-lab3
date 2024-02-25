@@ -17,6 +17,7 @@ _start:
   mov r0, pointer
   inc r0
   mov pointer, r0
-  sub r0, end_str
+  mov r1, end_str
+  sub r0, r1
   jnz _start
   hlt
