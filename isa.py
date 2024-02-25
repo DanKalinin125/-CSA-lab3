@@ -28,7 +28,7 @@ class Opcode(str, Enum):
 
 branch_instructions = [Opcode.JG, Opcode.JZ, Opcode.JNZ, Opcode.JMP]
 
-two_parameter_instructions = [Opcode.ADD, Opcode.SUB, Opcode.MOV]
+two_parameter_instructions = [Opcode.ADD, Opcode.SUB, Opcode.TEST, Opcode.MOV]
 
 one_parameter_instructions = [Opcode.INC, Opcode.DEC]
 
