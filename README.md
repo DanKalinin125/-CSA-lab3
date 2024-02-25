@@ -78,7 +78,7 @@
 
 // Строки
 
-<string> ::= '"' <text> '"'
+<string> ::= "'" <text> "'"
 
 <text> ::= <word> | <word> <word>
 
@@ -221,9 +221,9 @@ Instruction & Data memory
     {
         "index": 0,
         "opcode": "mov",
-        "addr_1": "r1",
+        "arg_1": "r1",
         "is_indirect_1": false,
-        "addr_2": "r2",
+        "arg_2": "r2",
         "is_indirect_2": false
     }
 ]
@@ -233,10 +233,10 @@ Instruction & Data memory
 
 - `index` - адрес в памяти
 - `opcode` - код операции
-- `addr_1` - адресс_1
-- `is_indirect_1` - косвенная ли адресация для addr_1
-- `addr_2` - адресс_2
-- `is_indirect_2` - косвенная ли адресация для addr_2
+- `arg_1` - аргумент_1
+- `is_indirect_1` - косвенная ли адресация для arg_1
+- `arg_2` - аргумент_2
+- `is_indirect_2` - косвенная ли адресация для arg_2
 
 Типы данных в модуле [isa](./isa.py), где:
 
