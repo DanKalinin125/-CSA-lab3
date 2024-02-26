@@ -62,7 +62,7 @@ jobs:
           pip install poetry
           poetry install
 
-      - name: Check code formatting with Ruff
+      - name: Check code formatting with Mypy
         run: poetry run mypy .
 
   lint:
