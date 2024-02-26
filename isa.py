@@ -3,9 +3,7 @@ from enum import Enum
 
 
 class Opcode(str, Enum):
-    """Opcode для инструкций.
-
-    """
+    """Opcode для инструкций."""
 
     NOP = "nop"
     HLT = "hlt"
@@ -38,9 +36,9 @@ zero_parameters_instructions = [Opcode.NOP, Opcode.HLT]
 def write_code(filename: str, code):
     """Записать машинный код в файл.
 
-        Сереализует машинный код из объекта python в объект json и записывает в json файл
+    Сереализует машинный код из объекта python в объект json и записывает в json файл
 
-        """
+    """
 
     with open(filename, "w", encoding="utf-8") as file:
         buf = []
