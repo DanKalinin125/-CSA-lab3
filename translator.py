@@ -260,7 +260,7 @@ def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
         args = line[len(command) + 1 : :].split(", ")
         arg_1, is_indirect_1, in_labels_1 = parse_address(args[0], opcode, labels)
         arg_2, is_indirect_2, in_labels_2 = parse_address(args[1], opcode, labels)
-        assert not(in_labels_1 and in_labels_2), "Code error: mem-to-mem operations prohibited"
+        assert not (in_labels_1 and in_labels_2), "Code error: mem-to-mem operations prohibited"
 
     return {
         "index": position,
