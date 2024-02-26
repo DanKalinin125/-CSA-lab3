@@ -13,11 +13,16 @@ out_addr:
 
 _start:
   mov r0, (pointer)
+  mov r1, r0
+  mov r2, end_str
+  sub r1, r2
+  jnz write
+  hlt
+
+write:
   mov (out_addr), r0
   mov r0, pointer
   inc r0
   mov pointer, r0
-  mov r1, end_str
-  sub r0, r1
-  jnz _start
-  hlt
+  jmp _start
+
