@@ -313,6 +313,12 @@ def find_start(labels: dict) -> list:
     ]
 
 
+def sort_code_by_index(code: list) -> list:
+    """Сортирует машинный код в порядке возрастания индекса"""
+
+    return sorted(code, key=lambda d: d["index"])
+
+
 def translate(lines: list[str]):
     """Перевести исходную программу в машинный код"""
 
@@ -323,7 +329,7 @@ def translate(lines: list[str]):
     words = find_words(lines, labels)
     code = find_code(lines, labels)
 
-    return start + words + code
+    return sort_code_by_index(start + words + code)
 
 
 def main(source_filename: str, target_filename: str):
