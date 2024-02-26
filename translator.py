@@ -199,14 +199,14 @@ def find_words(lines: list[str], labels: dict) -> list:
 REGISTERS = ["r0", "r1", "r2", "r3"]
 
 
-def parse_address(address: str, opcode: Opcode, labels: dict) -> tuple[str, bool]:
+def parse_address(address: str, opcode: Opcode, labels: dict) -> tuple[str, bool, bool]:
     """Спарсить адрес из аргумента команды
 
     Определяет обладает ли адрес косвенной адресацией,
     проверяет адрес на обязательное наличие среди чисел, меток и регистров,
     проверяет адрес на обязаельность reg-to-reg оперций для рассматриваемой команды.
 
-    Возвращает "очищенный" адрес и признак косвенной адресации
+    Возвращает "очищенный" адрес, признак косвенной адресации, признак ссылки на метку
     """
 
     if address.startswith("(") and address.endswith(")"):
@@ -217,12 +217,13 @@ def parse_address(address: str, opcode: Opcode, labels: dict) -> tuple[str, bool
 
     assert address.isdigit() or address in labels or address in REGISTERS, "Code error: missing address " + address
 
-    if address in labels:
+    in_labels = address in labels
+    if in_labels:
         if opcode != Opcode.MOV and opcode not in branch_instructions:
             raise AssertionError("Code error: command " + str(opcode) + " only register-to-register")
         address = str(labels[address])
 
-    return address, is_indirect
+    return address, is_indirect, in_labels
 
 
 def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
@@ -250,15 +251,16 @@ def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
         assert len(line[len(command) + 1 : :].split(", ")) == 1, (
             "Code error: the command " + command + " must have 1 args"
         )
-        arg_1, is_indirect_1 = parse_address(line[len(command) + 1 : :].split(", ")[0], opcode, labels)
+        arg_1, is_indirect_1, in_labels_1 = parse_address(line[len(command) + 1 : :].split(", ")[0], opcode, labels)
 
     elif command in two_parameter_instructions:
         assert len(line[len(command) + 1 : :].split(", ")) == 2, (
             "Code error: the command " + command + " must have 2 args"
         )
         args = line[len(command) + 1 : :].split(", ")
-        arg_1, is_indirect_1 = parse_address(args[0], opcode, labels)
-        arg_2, is_indirect_2 = parse_address(args[1], opcode, labels)
+        arg_1, is_indirect_1, in_labels_1 = parse_address(args[0], opcode, labels)
+        arg_2, is_indirect_2, in_labels_2 = parse_address(args[1], opcode, labels)
+        assert not(in_labels_1 and in_labels_2), "Code error: mem-to-mem operations prohibited"
 
     return {
         "index": position,
