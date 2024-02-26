@@ -68,7 +68,7 @@ def delete_comments(lines: list[str]) -> list[str]:
 
 
 def is_label(line: str) -> bool:
-    """Проверяет является ли строка меткой
+    """Проверить является ли строка меткой
 
     Возвращает bool значение: true - является, false - не является
     """
@@ -76,7 +76,7 @@ def is_label(line: str) -> bool:
 
 
 def is_word(line: str) -> bool:
-    """Проверяет является ли строка словом (.word)
+    """Проверить является ли строка словом (.word)
 
     Возвращает bool значение: true - является, false - не является
     """
@@ -85,7 +85,7 @@ def is_word(line: str) -> bool:
 
 
 def word_is_str(word: str) -> bool:
-    """Проверяет является ли слово (.word) стокой
+    """Проверить является ли слово (.word) стокой
 
     Возвращает bool значение true - является, false - не является
     """
@@ -100,7 +100,7 @@ PROGRAM_START_POSITION_IN_MEMORY = 4  # Считается, что до этог
 
 
 def find_labels(lines: list[str]) -> dict:
-    """Находит все метки в коде и их дальнейшие позиции в машинном коде
+    """Найти все метки в коде и их дальнейшие позиции в машинном коде
 
     Возвращает словарь ключ-значение: ключ - label_name, значение - label_position
     """
@@ -125,7 +125,7 @@ def find_labels(lines: list[str]) -> dict:
 
 
 def find_words(lines: list[str], labels: dict) -> list:
-    """Находит все слова (.word) в коде и преобразует их в машинный код
+    """Найти все слова (.word) в коде и преобразовать их в машинный код
 
     Возвращает машинный код со всеми найденными словами
     """
@@ -200,7 +200,7 @@ REGISTERS = ["r0", "r1", "r2", "r3"]
 
 
 def parse_address(address: str, opcode: Opcode, labels: dict) -> tuple[str, bool]:
-    """Парсит адрес из аргумента команды
+    """Спарсить адрес из аргумента команды
 
     Определяет обладает ли адрес косвенной адресацией,
     проверяет адрес на обязательное наличие среди чисел, меток и регистров,
@@ -226,7 +226,7 @@ def parse_address(address: str, opcode: Opcode, labels: dict) -> tuple[str, bool
 
 
 def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
-    """Переводит строку, соответствующую команде в машинный код
+    """Перевести строку, соответствующую команде в машинный код
 
     Проверяет команду на наличие в заданном языке программирования,
     Проверяет команду на корректное число её аргументов.
@@ -271,7 +271,7 @@ def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
 
 
 def find_code(lines: list[str], labels: dict) -> list:
-    """Находит все команды в коде и преобразует их в машинный код
+    """Найти все команды в коде и преобразует их в машинный код
 
     Возвращает машинный код найденных команд
     """
@@ -293,7 +293,7 @@ def find_code(lines: list[str], labels: dict) -> list:
 
 
 def find_start(labels: dict) -> list:
-    """Определяет машинный код команды jmp _start
+    """Определить машинный код команды jmp _start
 
     Находит метку _start среди меток и возвращает машинный код начала программы
     """
@@ -312,7 +312,7 @@ def find_start(labels: dict) -> list:
 
 
 def translate(lines: list[str]):
-    """Переводит исходную программу в машинный код"""
+    """Перевести исходную программу в машинный код"""
 
     lines = delete_comments(lines)
 
