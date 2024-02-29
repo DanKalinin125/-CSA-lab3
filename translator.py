@@ -261,6 +261,9 @@ def parse_command_to_code(line: str, position: int, labels: dict) -> dict:
         arg_1, is_indirect_1, in_labels_1 = parse_address(args[0], opcode, labels)
         arg_2, is_indirect_2, in_labels_2 = parse_address(args[1], opcode, labels)
         assert not (in_labels_1 and in_labels_2), "Code error: mem-to-mem operations prohibited"
+        assert not (is_indirect_1 and is_indirect_2), "Code error: double indirect addressing is prohibited"
+        assert not (arg_1.startswith("r") and is_indirect_1), "Code error: indirect addressing with regs is prohibited"
+        assert not (arg_2.startswith("r") and is_indirect_2), "Code error: indirect addressing with regs is prohibited"
 
     return {
         "index": position,
