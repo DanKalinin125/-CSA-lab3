@@ -11,7 +11,7 @@ class ALUOpcode(str, Enum):
     DEC_B = "dec_b"
     ADD = "add"
     SUB = "sub"
-    TEST = "sub"
+    TEST = "test"
     SKIP_A = "skip_a"
     SKIP_B = "skip_b"
 
