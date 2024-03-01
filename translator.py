@@ -31,7 +31,7 @@ def command_to_opcode(command):
     }.get(command, Opcode.NOP)
 
 
-def read_asm(source_filename: str) -> list[str]:
+def read_asm(source_filename: str) -> tuple[int, list[str]]:
     """Прочитать код из файла asm
 
     Возвращает список строк из указанного файла,
@@ -40,12 +40,14 @@ def read_asm(source_filename: str) -> list[str]:
     """
 
     lines = []
+    source_loc = 0
     with open(source_filename) as file:
         for line in file:
+            source_loc += 1
             line = line.strip()
             if line != "":
                 lines.append(line)
-    return lines
+    return source_loc, lines
 
 
 def delete_comments(lines: list[str]) -> list[str]:
@@ -336,11 +338,11 @@ def translate(lines: list[str]):
 
 
 def main(source_filename: str, target_filename: str):
-    lines = read_asm(source_filename)
+    source_loc, lines = read_asm(source_filename)
     code = translate(lines)
     write_code(target_filename, code)
 
-    print("Translate to " + target_filename)
+    print(f"source LoC: {source_loc} code instr: {len(code)}")
 
 
 if __name__ == "__main__":

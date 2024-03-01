@@ -53,7 +53,7 @@ class ALU:
         }
         self.operation = None
         self.n_flag = False
-        self.z_flag = False
+        self.z_flag = True
 
     def calc(self):
         if self.operation == ALUOpcode.INC_A:
@@ -96,7 +96,7 @@ class ALU:
         """Установка флагов на АЛУ"""
 
         self.n_flag = int(self.result["arg_1"]) < 0
-        self.z_flag = int(self.result["arg_1"]) == 0
+        self.z_flag = int(self.result["arg_1"]) == 0 or self.result["arg_1"] is None
 
     def set_details(self, src_a: dict, src_b: dict, operation: ALUOpcode):
         """Обработка АЛУ команд с ControUnit
@@ -342,6 +342,7 @@ class ControlUnit:
     def __init__(self, program: list, data_path: DataPath):
         self.data_path = data_path
         data_path.signal_fill_memory(program)
+        self.last_pc = 0  # Нужен для логирования
 
     def instr_fetch(self):
         """Выборка инструкции"""
@@ -531,8 +532,11 @@ class ControlUnit:
         return result
 
     def __repr__(self) -> str:
+        index = self.last_pc
+        self.last_pc = self.data_path.pc["arg_1"]
+
         return "INDEX: {:4} | INSTR: {:12} | R0: {:8} | R1: {:8} | R2: {:8} | R3: {:8} | N: {:1} | Z: {:1} | PC: {:4}".format(
-            0 if self.data_path.memory[0] == self.data_path.ir else self.data_path.pc["arg_1"] - 1,
+            index,
             self.ir_to_str(self.data_path.ir),
             int(self.data_path.registers[0]["arg_1"]),
             int(self.data_path.registers[1]["arg_1"]),
