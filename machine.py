@@ -32,7 +32,7 @@ class ALU:
     src_b: dict = {}
     operation: ALUOpcode | None = None
     n_flag: bool = False
-    z_flag: bool = False
+    z_flag: bool = True
 
     def __init__(self):
         self.result = {
@@ -60,43 +60,45 @@ class ALU:
 
     def calc(self):
         if self.operation == ALUOpcode.INC_A:
-            self.result = self.src_a
+            self.result = self.src_a.copy()
             self.result["arg_1"] = int(self.result["arg_1"]) + 1
             self.set_flags()
         elif self.operation == ALUOpcode.INC_B:
-            self.result = self.src_b
+            self.result = self.src_b.copy()
             self.result["arg_1"] = int(self.result["arg_1"]) + 1
             self.set_flags()
         elif self.operation == ALUOpcode.DEC_A:
-            self.result = self.src_a
+            self.result = self.src_a.copy()
             self.result["arg_1"] = int(self.result["arg_1"]) - 1
             self.set_flags()
         elif self.operation == ALUOpcode.DEC_B:
-            self.result = self.src_b
+            self.result = self.src_b.copy()
             self.result["arg_1"] = int(self.result["arg_1"]) - 1
             self.set_flags()
         elif self.operation == ALUOpcode.ADD:
-            self.result = self.src_a
+            self.result = self.src_a.copy()
             self.result["arg_1"] = int(self.src_a["arg_1"]) + int(self.src_b["arg_1"])
             self.set_flags()
         elif self.operation == ALUOpcode.SUB:
-            self.result["arg_1"] = int(self.src_a["arg_1"]) + int(self.src_b["arg_1"])
+            self.result = self.src_a.copy()
+            self.result["arg_1"] = int(self.src_a["arg_1"]) - int(self.src_b["arg_1"])
             self.set_flags()
         elif self.operation == ALUOpcode.TEST:
+            self.result = self.src_a.copy()
             self.result["arg_1"] = int(self.src_a["arg_1"]) & int(self.src_b["arg_1"])
             self.set_flags()
         elif self.operation == ALUOpcode.SKIP_A:
-            self.result = self.src_a
+            self.result = self.src_a.copy()
         elif self.operation == ALUOpcode.SKIP_B:
-            self.result = self.src_b
+            self.result = self.src_b.copy()
         else:
             raise AssertionError(f"Unknown ALU operation: {self.operation}")
 
     def set_flags(self):
         """Установка флагов на АЛУ"""
 
-        self.n_flag = self.result["arg_1"] < 0
-        self.z_flag = self.result["arg_1"] == 0
+        self.n_flag = int(self.result["arg_1"]) < 0
+        self.z_flag = int(self.result["arg_1"]) == 0
 
     def set_details(self, src_a: dict, src_b: dict, operation: ALUOpcode):
         """Обработка АЛУ команд с ControUnit
@@ -112,7 +114,7 @@ class ALU:
 MEMORY_SIZE = 65536
 INPUT_BUFFER_INDEX = 1
 OUTPUT_STR_BUFFER_INDEX = 2
-OUTPUT_INT_BUFFER_INDEX = 2
+OUTPUT_INT_BUFFER_INDEX = 3
 
 
 class DataPath:
@@ -133,16 +135,16 @@ class DataPath:
         self.memory = [{"opcode": Opcode.NOP.value}] * MEMORY_SIZE
         self.registers = [{
             "opcode": Opcode.NOP.value,
-            "arg_1": None,
-            "is_indirect_1": None,
+            "arg_1": 0,
+            "is_indirect_1": False,
             "arg_2": None,
             "is_indirect_2": None,
         }] * 4
         self.ps = {"N": self.alu.n_flag, "Z": self.alu.z_flag}
         self.dr = {
             "opcode": Opcode.NOP.value,
-            "arg_1": None,
-            "is_indirect_1": None,
+            "arg_1": 0,
+            "is_indirect_1": False,
             "arg_2": None,
             "is_indirect_2": None,
         }
@@ -156,7 +158,7 @@ class DataPath:
         self.pc = {
             "opcode": Opcode.NOP.value,
             "arg_1": 0,
-            "is_indirect_1": None,
+            "is_indirect_1": False,
             "arg_2": None,
             "is_indirect_2": None,
         }
@@ -176,6 +178,7 @@ class DataPath:
         """Прочесть данные из входного буффера"""
         assert self.input_buffer != [], "Attempt to read from an empty input buffer"
         arg = ord(self.input_buffer[0]) if type(self.input_buffer[0]) == str else self.input_buffer[0]
+        logging.debug("input: %s", repr(self.input_buffer[0]))
         self.input_buffer = self.input_buffer[1::]
         return {
             "opcode": Opcode.NOP.value,
@@ -226,7 +229,6 @@ class DataPath:
         """Защелкнуть регистр адреса"""
         assert sel in [Selectors.FROM_ADDR1_TO_AR, Selectors.FROM_ADDR2_TO_AR], f"Unknown selector '{sel}'"
         if sel == Selectors.FROM_ADDR1_TO_AR:
-            print(type(self.alu.result))
             self.ar = int(self.alu.result["arg_1"])
         else:
             self.ar = int(self.alu.result["arg_2"])
@@ -243,14 +245,19 @@ class DataPath:
     def signal_write(self, sel: Selectors):
         assert self.ar >= 0, "Address below memory limit"
         assert self.ar <= MEMORY_SIZE, "Address above memory limit"
-        assert self.ar == INPUT_BUFFER_INDEX, "Attempt to read from input buffer"
+        assert self.ar != INPUT_BUFFER_INDEX, "Attempt to write to input buffer"
 
         data_to_write = self.parse_data_to_write(sel)
 
         if self.ar == OUTPUT_STR_BUFFER_INDEX:
-            self.output_str_buffer.append(chr(data_to_write["arg_1"]))
+            logging.debug("output_str_buffer: %s << %s", repr("".join(self.output_str_buffer)),
+                          repr(chr(int(data_to_write["arg_1"]))))
+            self.output_str_buffer.append(chr(int(data_to_write["arg_1"])))
+
         elif self.ar == OUTPUT_INT_BUFFER_INDEX:
-            self.output_int_buffer.append(data_to_write["arg_1"])
+            logging.debug("output_int_buffer: [%s] << %d", ", ".join(map(str, self.output_int_buffer)),
+                          int(data_to_write["arg_1"]))
+            self.output_int_buffer.append(int(data_to_write["arg_1"]))
         else:
             self.memory[self.ar] = data_to_write
 
@@ -320,10 +327,9 @@ class ControlUnit:
         """Выборка инструкции"""
         self.data_path.signal_execute_alu_op(ALUOpcode.SKIP_A, left_sel=Selectors.FROM_PC_TO_ALU_A)
         self.data_path.signal_latch_ar(Selectors.FROM_ADDR1_TO_AR)
-
+        self.data_path.signal_latch_ir()
         self.data_path.signal_execute_alu_op(ALUOpcode.INC_A, left_sel=Selectors.FROM_PC_TO_ALU_A)
         self.data_path.signal_latch_pc()
-        self.data_path.signal_latch_ir()
 
     def execute(self):
         """Выполнение инструкции"""
@@ -344,7 +350,7 @@ class ControlUnit:
             self.data_path.signal_latch_ar(Selectors.FROM_ADDR2_TO_AR)
             self.data_path.signal_latch_dr()
             self.data_path.signal_execute_alu_op(ALUOpcode.SKIP_B, right_sel=Selectors.FROM_DR_TO_ALU_B)
-            self.data_path.signal_latch_ar(Selectors.FROM_ADDR2_TO_AR)
+            self.data_path.signal_latch_ar(Selectors.FROM_ADDR1_TO_AR)
         # После выборки обработки косвенности, в AR лежит адрес данных, которые нужны из памяти
 
         if opcode in zero_parameters_instructions:
@@ -370,8 +376,8 @@ class ControlUnit:
         assert arg_1.startswith("r"), "Unknown register in one parameters instruction"
 
         num_reg = int(arg_1[1::])
-        left_sel = Selectors[f"from_r{num_reg}_to_alu_a"]
-        result_reg_sel = Selectors[f"from_alu_to_r{num_reg}"]
+        left_sel = Selectors[f"from_r{num_reg}_to_alu_a".upper()]
+        result_reg_sel = Selectors[f"from_alu_to_r{num_reg}".upper()]
         return num_reg, left_sel, result_reg_sel
 
     def execute_one_parameters_instruction(self, opcode: Opcode, ir):
@@ -395,9 +401,9 @@ class ControlUnit:
 
         num_reg_1 = int(arg_1[1::])
         num_reg_2 = int(arg_2[1::])
-        left_sel = Selectors[f"from_r{num_reg_1}_to_alu_a"]
-        right_sel = Selectors[f"from_r{num_reg_2}_to_alu_b"]
-        result_reg_sel = Selectors[f"from_alu_to_r{num_reg_1}"]
+        left_sel = Selectors[f"from_r{num_reg_1}_to_alu_a".upper()]
+        right_sel = Selectors[f"from_r{num_reg_2}_to_alu_b".upper()]
+        result_reg_sel = Selectors[f"from_alu_to_r{num_reg_1}".upper()]
         return num_reg_1, num_reg_2, left_sel, right_sel, result_reg_sel
 
     def resolve_mov_instruction(self, ir):
@@ -418,43 +424,44 @@ class ControlUnit:
             if str(arg_2).startswith("r"):  # Читаем из регистра в регистр
                 num_reg_2 = int(arg_2[1::])
                 self.data_path.signal_execute_alu_op(ALUOpcode.SKIP_B,
-                                                     right_sel=Selectors[f"from_r{num_reg_2}_to_alu_b"])
-                self.data_path.signal_latch_general_register(num_reg_1, Selectors[f"from_alu_to_r{num_reg_1}"])
+                                                     right_sel=Selectors[f"from_r{num_reg_2}_to_alu_b".upper()])
+                self.data_path.signal_latch_general_register(num_reg_1, Selectors[f"from_alu_to_r{num_reg_1}".upper()])
             else:  # Читаем из памяти в регистр
                 if is_indirect_2:
                     self.data_path.signal_latch_general_register(num_reg_1,
-                                                                 Selectors[f"from_memory_to_r{num_reg_1}"])
+                                                                 Selectors[f"from_memory_to_r{num_reg_1}".upper()])
                 else:
                     self.data_path.signal_execute_alu_op(ALUOpcode.SKIP_B, right_sel=Selectors.FROM_IR_TO_ALU_B)
                     self.data_path.signal_latch_ar(Selectors.FROM_ADDR2_TO_AR)
                     self.data_path.signal_latch_general_register(num_reg_1,
-                                                                 Selectors[f"from_memory_to_r{num_reg_1}"])
+                                                                 Selectors[f"from_memory_to_r{num_reg_1}".upper()])
         else:  # Записываем в память
             if str(arg_2).startswith("r"):  # Записываем в память из регистра
                 num_reg_2 = int(arg_2[1::])
                 if is_indirect_1:
-                    self.data_path.signal_write(Selectors[f"from_r{num_reg_2}_to_memory"])
+                    self.data_path.signal_write(Selectors[f"from_r{num_reg_2}_to_memory".upper()])
                 else:
                     self.data_path.signal_execute_alu_op(ALUOpcode.SKIP_B, right_sel=Selectors.FROM_IR_TO_ALU_B)
                     self.data_path.signal_latch_ar(Selectors.FROM_ADDR1_TO_AR)
-                    self.data_path.signal_write(Selectors[f"from_r{num_reg_2}_to_memory"])
+                    self.data_path.signal_write(Selectors[f"from_r{num_reg_2}_to_memory".upper()])
             else:  # Попытка записать из памяти в память
                 raise AssertionError("Mem-to-mem operations prohibited")
 
     def execute_two_parameters_instruction(self, opcode: Opcode, ir):
         """Выполнение инструкции с одним аргументом"""
-        num_reg_1, num_reg_2, left_sel, right_sel, result_reg_sel = self.set_selectors_not_mov_two_params_instr(ir)
-        if opcode == Opcode.ADD:
-            self.data_path.signal_execute_alu_op(ALUOpcode.ADD, left_sel=left_sel, right_sel=right_sel)
-            self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
-        elif opcode == Opcode.SUB:
-            self.data_path.signal_execute_alu_op(ALUOpcode.SUB, left_sel=left_sel, right_sel=right_sel)
-            self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
-        elif opcode == Opcode.TEST:
-            self.data_path.signal_execute_alu_op(ALUOpcode.TEST, left_sel=left_sel, right_sel=right_sel)
-            self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
-        elif opcode == Opcode.MOV:
+        if opcode == Opcode.MOV:
             self.resolve_mov_instruction(ir)
+        else:
+            num_reg_1, num_reg_2, left_sel, right_sel, result_reg_sel = self.set_selectors_not_mov_two_params_instr(ir)
+            if opcode == Opcode.ADD:
+                self.data_path.signal_execute_alu_op(ALUOpcode.ADD, left_sel=left_sel, right_sel=right_sel)
+                self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
+            elif opcode == Opcode.SUB:
+                self.data_path.signal_execute_alu_op(ALUOpcode.SUB, left_sel=left_sel, right_sel=right_sel)
+                self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
+            elif opcode == Opcode.TEST:
+                self.data_path.signal_execute_alu_op(ALUOpcode.TEST, left_sel=left_sel, right_sel=right_sel)
+                self.data_path.signal_latch_general_register(num_reg_1, result_reg_sel)
 
     def execute_branch_instruction(self, opcode: Opcode, ps: dict):
         if opcode == Opcode.JG:
@@ -483,7 +490,7 @@ class ControlUnit:
 
         logging.debug("%s", self)
 
-    def ir_to_str(self, ir):
+    def ir_to_str(self, ir: dict) -> str:
         if ir["is_indirect_1"]:
             arg_1 = f"({ir['arg_1']})"
         else:
@@ -493,18 +500,23 @@ class ControlUnit:
             arg_2 = f"({ir['arg_2']})"
         else:
             arg_2 = ir["arg_2"]
-        return f"{ir['opcode']} {arg_1}, {arg_2}"
+
+        if arg_2 == None:
+            return f"{ir['opcode']} {arg_1}"
+        else:
+            return f"{ir['opcode']} {arg_1}, {arg_2}"
 
     def __repr__(self) -> str:
-        return "INSTR: {:12}| R0: {:4} | R1: {:4} | R2: {:4} | R3: {:4} | N: {:1} | Z: {:1} | PC: {:4}".format(
+        return "INDEX: {:4} | INSTR: {:12} | R0: {:8} | R1: {:8} | R2: {:8} | R3: {:8} | N: {:1} | Z: {:1} | PC: {:4}".format(
+            0 if self.data_path.memory[0] == self.data_path.ir else self.data_path.pc["arg_1"] - 1,
             self.ir_to_str(self.data_path.ir),
-            self.data_path.registers[0],
-            self.data_path.registers[1],
-            self.data_path.registers[2],
-            self.data_path.registers[3],
+            int(self.data_path.registers[0]["arg_1"]),
+            int(self.data_path.registers[1]["arg_1"]),
+            int(self.data_path.registers[2]["arg_1"]),
+            int(self.data_path.registers[3]["arg_1"]),
             (1 if self.data_path.ps["N"] else 0),
             (1 if self.data_path.ps["Z"] else 0),
-            self.data_path.pc["arg_1"]
+            self.data_path.pc["arg_1"],
         )
 
 
@@ -523,7 +535,7 @@ def simulation(code: list, input_tokens: list, limit: int) -> tuple[list, list, 
     if instr_counter >= limit:
         logging.warning("Limit exceeded!")
     logging.info("output_symbol_buffer: %s", repr("".join(data_path.output_str_buffer)))
-    logging.info("output_numeric_buffer: [%s]", ", ".join(str(x) for x in data_path.output_int_buffer))
+    logging.info("output_numeric_buffer: %s", ", ".join(str(x) for x in data_path.output_int_buffer))
     symbols = data_path.output_str_buffer
     numbers = data_path.output_int_buffer
     return symbols, numbers, instr_counter
@@ -552,8 +564,8 @@ def main(code_file: str, input_file: str):
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.DEBUG)
-    code_file = "examples/machine_codes/hello.json"
-    input_file = "examples/inputs/hello.txt"
+    code_file = "examples/machine_codes/hello_user_name.json"
+    input_file = "examples/inputs/hello_user_name.txt"
 
     '''assert len(sys.argv) == 3, "Wrong arguments: machine.py <code_file> <input_file>"
     _, code_file, input_file = sys.argv'''
