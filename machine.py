@@ -584,7 +584,9 @@ def main(code_file: str, input_file: str):
     print(output_numbers)
     print("instr_counter: ", instr_counter)
 
-FORMAT = '%(levelname)s    %(filename)s    %(message)s'
+
+FORMAT = "%(levelname)s    %(filename)s    %(message)s"
+
 
 if __name__ == "__main__":
     logging.basicConfig(format=FORMAT)
