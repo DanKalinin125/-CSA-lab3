@@ -342,7 +342,6 @@ class ControlUnit:
     def __init__(self, program: list, data_path: DataPath):
         self.data_path = data_path
         data_path.signal_fill_memory(program)
-        self.last_pc = 0  # Нужен для логирования
 
     def instr_fetch(self):
         """Выборка инструкции"""
@@ -532,11 +531,7 @@ class ControlUnit:
         return result
 
     def __repr__(self) -> str:
-        index = self.last_pc
-        self.last_pc = self.data_path.pc["arg_1"]
-
-        return "INDEX: {:4} | INSTR: {:12} | R0: {:8} | R1: {:8} | R2: {:8} | R3: {:8} | N: {:1} | Z: {:1} | PC: {:4}".format(
-            index,
+        return " INSTR: {:12} | R0: {:8} | R1: {:8} | R2: {:8} | R3: {:8} | N: {:1} | Z: {:1} | PC: {:4}".format(
             self.ir_to_str(self.data_path.ir),
             int(self.data_path.registers[0]["arg_1"]),
             int(self.data_path.registers[1]["arg_1"]),
@@ -562,8 +557,8 @@ def simulation(code: list, input_tokens: list, limit: int) -> tuple[list, list, 
 
     if instr_counter >= limit:
         logging.warning("Limit exceeded!")
-    logging.info("output_symbol_buffer: %s", repr("".join(data_path.output_str_buffer)))
-    logging.info("output_numeric_buffer: %s", ", ".join(str(x) for x in data_path.output_int_buffer))
+    logging.info("output_str_buffer: %s", repr("".join(data_path.output_str_buffer)))
+    logging.info("output_int_buffer: [%s]", ", ".join(str(x) for x in data_path.output_int_buffer))
     symbols = data_path.output_str_buffer
     numbers = data_path.output_int_buffer
     return symbols, numbers, instr_counter
@@ -589,8 +584,10 @@ def main(code_file: str, input_file: str):
     print(output_numbers)
     print("instr_counter: ", instr_counter)
 
+FORMAT = '%(levelname)s    %(filename)s    %(message)s'
 
 if __name__ == "__main__":
+    logging.basicConfig(format=FORMAT)
     logging.getLogger().setLevel(logging.DEBUG)
 
     assert len(sys.argv) == 3, "Wrong arguments: machine.py <code_file> <input_file>"
