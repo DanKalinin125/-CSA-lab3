@@ -344,13 +344,13 @@ Instruction & Data memory
 - [hello](./examples/src/hello.asm) - напечатать hello world
 - [cat](./examples/src/cat.asm) - печатать данные, поданные на вход симулятору через файл ввода (размер ввода потенциально бесконечен)
 - [hello_user_name](./examples/src/hello_user_name.asm) - запросить у пользователя его имя, считать его, вывести на экран приветствие
-- [prob2](./examples/src/prob2.asm)  - вывести сумму четных чисел последовательности Фиббоначи, не превышающих 4 млн 
+- [prob2](./examples/src/prob2.asm) - вывести сумму четных чисел последовательности Фиббоначи, не превышающих 4 млн
 
 Интеграционные тесты реализованы в integration_test:
 
 - Стратегия: golden tests, конфигурация в папке [golden](./golden)
 
-### CI при помощи Github Action:
+### CI при помощи Github Action
 
 ```yaml
 name: Python CI
@@ -445,6 +445,7 @@ jobs:
       - name: Run Ruff linters
         run: poetry run ruff check .
 ```
+
 где:
 
 - `poetry` - управление зависимостями
