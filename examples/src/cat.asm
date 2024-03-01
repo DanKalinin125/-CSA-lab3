@@ -18,5 +18,3 @@ _start:
 write:
   mov (out_addr), r0
   jmp _start
-
-

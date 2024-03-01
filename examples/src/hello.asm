@@ -25,4 +25,3 @@ write:
   inc r0
   mov pointer, r0
   jmp _start
-
