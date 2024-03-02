@@ -72,7 +72,7 @@
 
 <branch_instruction> ::= "jg" | "jz" | "jnz" | "jmp"
 
-<two_parameter_instruction> ::= "add" | "sub" | "mov"
+<two_parameter_instruction> ::= "add" | "sub" | "mov" | "test"
 
 <one_parameter_instruction> ::= "inc" | "dec"
 
