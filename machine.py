@@ -110,6 +110,7 @@ class ALU:
 
 
 MEMORY_SIZE = 65536
+MAX_ARG = 281474976710656 # 2 в 48 степени
 INPUT_BUFFER_INDEX = 1
 OUTPUT_STR_BUFFER_INDEX = 2
 OUTPUT_INT_BUFFER_INDEX = 3
@@ -384,6 +385,9 @@ class ControlUnit:
         else:
             error_message = f"Unknown instruction {opcode}"
             raise AssertionError(error_message)
+
+        if not str(self.data_path.alu.result["arg_1"]).startswith("r"):
+            assert int(self.data_path.alu.result["arg_1"]) < MAX_ARG, "Value exceeded machine word"
 
     def execute_zero_parameters_instruction(self, opcode: Opcode):
         """Выполнение инструкции без аргументов"""
