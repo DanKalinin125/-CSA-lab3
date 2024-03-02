@@ -63,9 +63,21 @@ def delete_comments(lines: list[str]) -> list[str]:
         if comment_index == -1:
             lines_without_comments.append(line)
         elif comment_index != 0:
-            line = line[:comment_index]
-            line = line.strip()
-            lines_without_comments.append(line)
+            if line[:comment_index].count("'") % 2 == 1 and line[comment_index + 1 :].count("'") % 2 == 1:
+                # ; окружена ковычками, проверяем остаток строки
+                comment_index_new = line[comment_index + 1 :].find(";")
+                if comment_index_new == -1:
+                    # Больше нет ;, значит строка корректная
+                    lines_without_comments.append(line)
+                else:
+                    # Обрезаем всё, что лежит правее новых ковычек
+                    line = line[: comment_index + comment_index_new + 1]
+                    line = line.strip()
+                    lines_without_comments.append(line)
+            else:
+                line = line[:comment_index]
+                line = line.strip()
+                lines_without_comments.append(line)
     return lines_without_comments
 
 
