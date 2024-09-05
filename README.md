@@ -8,6 +8,9 @@
 
 > 41 час = 5 раб. дней, 1 час
 
+## Задание
+Задание - [lab3-task](./lab3-task.md)
+
 ## Вариант (с упрощением)
 
 > Исходный вариант: alg | risc | neum | hw | instr | binary | stream | mem | cstr | prob2 | pipeline\
